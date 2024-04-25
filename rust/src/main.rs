@@ -3,80 +3,76 @@ pub struct Solution;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct TreeNode {
-  pub val: i32,
-  pub left: Option<Rc<RefCell<TreeNode>>>,
-  pub right: Option<Rc<RefCell<TreeNode>>>,
+    pub val: i32,
+    pub left: Option<Rc<RefCell<TreeNode>>>,
+    pub right: Option<Rc<RefCell<TreeNode>>>,
 }
 
 impl TreeNode {
-  #[inline]
-  pub fn new(val: i32) -> Self {
-    TreeNode {
-      val,
-      left: None,
-      right: None
+    #[inline]
+    pub fn new(val: i32) -> Self {
+        TreeNode {
+            val,
+            left: None,
+            right: None,
+        }
     }
-  }
 }
 
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 type OptNode = Option<Rc<RefCell<TreeNode>>>;
 
 impl Solution {
-  pub fn max_path_sum(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
-    let mut max = i32::MIN;
+    pub fn sum_numbers(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        let temp = String::from("");
+        let mut sum = 0;
 
-    if let Some(ref node) = root {
-      if node.borrow().left.is_none() && node.borrow().right.is_none() {
-        max = node.borrow().val;
-        return max;
-      }
+        Self::dfs(root, temp, &mut sum);
+
+        sum
     }
 
-    
-    Self::find_sum(root, &mut max);
+    pub fn dfs(node: OptNode, mut temp: String, sum: &mut i32) {
+        if let Some(node) = node {
+            let val = node.borrow().val;
+            temp.push_str(&val.to_string());
 
-    max
-  }
+            if node.borrow().left.is_none() && node.borrow().right.is_none() {
+                let temp_i32: Result<i32, _> = temp.parse();
+                match temp_i32 {
+                    Ok(number) => {
+                        *sum += number;
+                    },
+                    Err(err) => println!("Error parsing number: {}", err),
+                }
+            }
 
-  pub fn find_sum (node: OptNode, max: &mut i32) -> i32 {
-    match node {
-      Some(node) => {
-        let left  = Self::find_sum(node.borrow().left.clone(), max);
-        let right  = Self::find_sum(node.borrow().right.clone(), max);
-        let all_sum = left + right + node.borrow().val;
-        let left_node_sum = left + node.borrow().val;
-        let right_node_sum = right + node.borrow().val;
+            if node.borrow().left.is_some() {
+                Self::dfs(node.borrow().left.clone(), temp.clone(), sum)
+            }
 
-        *max = i32::max(*max, left);
-        *max = i32::max(*max, right);
-        *max = i32::max(*max, all_sum);
-        *max = i32::max(*max, left_node_sum);
-        *max = i32::max(*max, right_node_sum);
-
-        let current_cycle_max = i32::max(left_node_sum,right_node_sum);
-        i32::max(current_cycle_max, node.borrow().val)
-      },
-      None => 0
+            if node.borrow().right.is_some() {
+                Self::dfs(node.borrow().right.clone(), temp.clone(), sum)
+            }
+        }
     }
-  }
 }
 
 fn main() {
-  let root = Some(Rc::new(RefCell::new(TreeNode::new(-10))));
-  if let Some(ref node) = root {
-    node.borrow_mut().left = Some(Rc::new(RefCell::new(TreeNode::new(9))));
-    node.borrow_mut().right = Some(Rc::new(RefCell::new(TreeNode::new(20))));
-  }
+    let root = Some(Rc::new(RefCell::new(TreeNode::new(4))));
+    if let Some(ref node) = root {
+        node.borrow_mut().left = Some(Rc::new(RefCell::new(TreeNode::new(9))));
+        node.borrow_mut().right = Some(Rc::new(RefCell::new(TreeNode::new(0))));
+    }
 
-  let right_root = root.as_ref().unwrap().borrow_mut().right.clone();
-  if let Some(ref node) = right_root {
-    node.borrow_mut().left = Some(Rc::new(RefCell::new(TreeNode::new(15))));
-    node.borrow_mut().right = Some(Rc::new(RefCell::new(TreeNode::new(7))));
-  }
+    let left_root = root.as_ref().unwrap().borrow_mut().left.clone();
+    if let Some(ref node) = left_root {
+        node.borrow_mut().left = Some(Rc::new(RefCell::new(TreeNode::new(5))));
+        node.borrow_mut().right = Some(Rc::new(RefCell::new(TreeNode::new(1))));
+    }
 
-  let result = Solution::max_path_sum(root);
-  println!("{}", result);
+    let result = Solution::sum_numbers(root);
+    println!("{}", result);
 }
