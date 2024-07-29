@@ -1,47 +1,40 @@
 pub struct Solution;
 impl Solution {
-    pub fn str_str(haystack: String, needle: String) -> i32 {
-        let s: Vec<u8> = needle
-            .bytes()
-            .chain("#".bytes())
-            .chain(haystack.bytes())
-            .collect();
+    pub fn add_binary(a: String, b: String) -> String {
+        use std::iter;
+        let mut carry = 0;
+        let mut cur_sum = 0;
+        let mut char_vec = a
+            .as_bytes()
+            .iter()
+            .rev()
+            .chain(iter::repeat(&b'0'))
+            .zip(b.as_bytes().iter().rev().chain(iter::repeat(&b'0')))
+            .take(a.len().max(b.len()))
+            .map(|(ac, bc)| {
+                cur_sum = (*ac - b'0') + (*bc - b'0') + carry;
+                carry = cur_sum / 2;
+                match cur_sum % 2 {
+                    1 => '1',
+                    _ => '0',
+                }
+            })
+            .collect::<Vec<_>>();
 
-        println!("{:?}", s);
-
-        let mut pi = vec![0usize; s.len()];
-
-        for i in 1..s.len() {
-            let mut j = pi[i - 1];
-
-            while j > 0 && s[j] != s[i] {
-                j = pi[j - 1];
-            }
-
-            if s[i] == s[j] {
-                j += 1;
-            }
-
-            pi[i] = j;
+        if carry == 1 {
+            char_vec.push('1');
         }
 
-        println!("{:?}", pi);
-
-        for i in needle.len() + 1..s.len() {
-            if pi[i] == needle.len() {
-                return (i - needle.len() * 2) as i32;
-            }
-        }
-
-        return -1;
+        char_vec.iter().rev().collect()
     }
 }
-fn main() {
-    let haystack = "sadbutsad".to_string();
-    let needle = "sad".to_string();
 
-    let expected = 0;
-    let result = Solution::str_str(haystack, needle);
+fn main() {
+    let a = "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".to_string();
+    let b = "1".to_string();
+
+    let expected = "100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000".to_string();
+    let result = Solution::add_binary(a, b);
 
     assert_eq!(expected, result);
 }
