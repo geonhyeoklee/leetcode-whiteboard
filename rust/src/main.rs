@@ -3,38 +3,46 @@ use std::collections::HashMap;
 pub struct Solution;
 
 impl Solution {
-    pub fn word_pattern(pattern: String, s: String) -> bool {
-        let s: Vec<&str> = s.split(' ').collect();
-
-        if pattern.len() != s.len() {
+    pub fn is_anagram(s: String, t: String) -> bool {
+        if s.len() != t.len() {
             return false;
         }
 
-        let mut table: HashMap<&str, char> = HashMap::new();
-        let mut used_pattern: Vec<char> = vec![];
+        let mut char_table: HashMap<char, usize> = HashMap::new();
 
-        for (i, c) in pattern.chars().enumerate() {
-            if !used_pattern.contains(&c) {
-                table.insert(s[i], c);
-                used_pattern.push(c);
+        for c in s.chars() {
+            if char_table.contains_key(&c) {
+                let current_value = char_table.get(&c).unwrap();
+                char_table.insert(c, current_value + 1);
+            } else {
+                char_table.insert(c, 1);
             }
         }
 
-        let s: String = s
-            .into_iter()
-            .map(|v| table.get(v).unwrap_or(&'_').to_owned())
-            .collect();
+        for c in t.chars() {
+            if char_table.contains_key(&c) {
+                let current_value = char_table.get(&c).unwrap();
 
-        pattern.eq(&s)
+                if *current_value > 0 {
+                    char_table.insert(c, current_value - 1);
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        true
     }
 }
 
 fn main() {
-    let pattern = "jquery".to_string();
-    let s = "jquery".to_string();
-    let expected = false;
+    let s = "anagram".to_string();
+    let t = "nagaram".to_string();
+    let expected = true;
 
-    let result = Solution::word_pattern(pattern, s);
+    let result = Solution::is_anagram(s, t);
 
     assert_eq!(expected, result);
 }
