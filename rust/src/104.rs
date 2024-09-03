@@ -23,17 +23,19 @@ pub struct Solution;
 
 impl Solution {
     pub fn max_depth(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
-        if root.is_none() {
-            return 0;
+        let mut max_depth = 0;
+        let mut stack = vec![(root, 0)];
+        while let Some((node, mut depth)) = stack.pop() {
+            if let Some(node) = node {
+                depth += 1;
+                max_depth = max_depth.max(depth);
+
+                stack.push((node.borrow().left.clone(), depth));
+                stack.push((node.borrow().right.clone(), depth));
+            }
         }
 
-        let l = root.as_ref().unwrap().borrow().left.clone();
-        let r = root.as_ref().unwrap().borrow().right.clone();
-
-        let l = Self::max_depth(l);
-        let r = Self::max_depth(r);
-
-        l.max(r) + 1
+        max_depth
     }
 }
 
