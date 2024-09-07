@@ -1,52 +1,51 @@
-pub struct Solution;
+use std::borrow::Borrow;
 
-impl Solution {
-    pub fn summary_ranges(nums: Vec<i32>) -> Vec<String> {
-        if nums.len() == 0 {
-            return vec![];
-        }
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct ListNode {
+    pub val: i32,
+    pub next: Option<Box<ListNode>>,
+}
 
-        let mut start = nums[0];
-        let mut ranges: Vec<String> = Vec::with_capacity(nums.len());
-
-        let mut peekable_nums = nums.iter().peekable();
-
-        for _ in 0..nums.len() {
-            let next = *peekable_nums.next().unwrap();
-            let maybe_peek = peekable_nums.peek();
-
-            match maybe_peek {
-                Some(peek) => {
-                    if next + 1 == **peek {
-                        continue;
-                    } else {
-                        ranges.push(Self::create_range(start, next));
-                        start = **peek;
-                    }
-                }
-                None => {
-                    ranges.push(Self::create_range(start, next));
-                    break;
-                }
-            }
-        }
-
-        ranges
-    }
-
-    fn create_range(start: i32, end: i32) -> String {
-        if start == end {
-            format!("{}", end)
-        } else {
-            format!("{}->{}", start, end)
-        }
+impl ListNode {
+    #[inline]
+    fn new(val: i32) -> Self {
+        ListNode { next: None, val }
     }
 }
 
+pub struct Solution;
+impl Solution {
+    pub fn merge_two_lists(
+        list1: Option<Box<ListNode>>,
+        list2: Option<Box<ListNode>>,
+    ) -> Option<Box<ListNode>> {
+        match (list1, list2) {
+            (Some(l1), None) => Some(l1),
+            (None, Some(l2)) => Some(l2),
+            (None, None) => None,
+            (Some(l1), Some(l2)) => match l1.val <= l2.val {
+                true => Some(Box::new(ListNode {
+                    val: l1.val,
+                    next: Self::merge_two_lists(l1.next, Some(l2)),
+                })),
+                false => Some(Box::new(ListNode {
+                    val: l2.val,
+                    next: Self::merge_two_lists(Some(l1), l2.next),
+                })),
+            },
+        }
+    }
+}
 fn main() {
-    let nums = vec![0, 1, 2, 4, 5, 7];
+    let list1 = Some(Box::new(ListNode::new(1)));
+    list1.clone().unwrap().next = Some(Box::new(ListNode::new(2)));
+    list1.clone().unwrap().next.unwrap().next = Some(Box::new(ListNode::new(4)));
 
-    let result = Solution::summary_ranges(nums);
+    let list2 = Some(Box::new(ListNode::new(1)));
+    list2.clone().unwrap().next = Some(Box::new(ListNode::new(3)));
+    list2.clone().unwrap().next.unwrap().next = Some(Box::new(ListNode::new(5)));
+
+    let result = Solution::merge_two_lists(list1, list2);
 
     println!("{:?}", result);
 }
